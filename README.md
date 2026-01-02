@@ -1,6 +1,6 @@
 # Polarimetric traveltime tomography model
 
-**Code for reproducing the plots of [Rathmann (2026, in review)](google.com)**
+**Model code and scripts for reproducing the plots of [Rathmann (2026, in review)](google.com)**
 
 ***What is it?*** 📡
 - A polarimetric common midpoint (CMP) framework for ice sheets that accounts for the dielectric anisotropy arising from preferred crystal orientations and preferred bubble shapes in firn, including refractive bending due to density variations.

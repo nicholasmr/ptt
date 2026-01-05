@@ -2,7 +2,7 @@
 
 Model code and scripts for reproducing the plots of Rathmann (2026, *in review*).
 
-<img src="https://raw.githubusercontent.com/nicholasmr/ptt/refs/heads/main/model.png?token=GHSAT0AAAAAACPHSIBFXYYTXVJSR5EHLU7C2KX5ZVA" alt="model" width="400px"> 
+<img src="https://raw.githubusercontent.com/nicholasmr/ptt/refs/heads/main/model.png" alt="model" width="400px"> 
 
 ## What is it? 📡
 - A polarimetric common midpoint (CMP) framework for ice sheets that accounts for the dielectric anisotropy arising from preferred crystal orientations and preferred bubble shapes in firn, including refractive bending due to density variations.

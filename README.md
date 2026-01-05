@@ -2,6 +2,8 @@
 
 Model code and scripts for reproducing the plots of Rathmann (2026, *in review*).
 
+<!-- 
+
 <img src="https://raw.githubusercontent.com/nicholasmr/ptt/refs/heads/main/model.png" alt="model" width="400px"> 
 
 ## What is it? 📡
@@ -12,3 +14,5 @@ Model code and scripts for reproducing the plots of Rathmann (2026, *in review*)
 - Model the dieletric behavioir of ice and firn. 
 - Model travel times along oblique ray paths. 
 - Solve an inverse problem to robustly recover the fabric eigenvalue profile and bubble close-off depth from a limited set of CMP offsets, even in the presence of noise.
+
+-->

@@ -2,9 +2,7 @@
 
 Model code and scripts for reproducing the plots of Rathmann (2026, RSPA).
 
-<!-- 
-
-<img src="https://raw.githubusercontent.com/nicholasmr/ptt/refs/heads/main/model.png" alt="model" width="400px"> 
+<img src="https://raw.githubusercontent.com/nicholasmr/ptt/refs/heads/main/overview.png?token=GHSAT0AAAAAACPHSIBFBR6TXMYKBROKQ6PS2KX5PMQ" alt="overview" width="650px"> 
 
 ## What is it? 📡
 - A polarimetric common midpoint (CMP) framework for ice sheets that accounts for the dielectric anisotropy arising from preferred crystal orientations and preferred bubble shapes in firn, including refractive bending due to density variations.
@@ -15,4 +13,3 @@ Model code and scripts for reproducing the plots of Rathmann (2026, RSPA).
 - Model travel times along oblique ray paths. 
 - Solve an inverse problem to robustly recover the fabric eigenvalue profile and bubble close-off depth from CMP traveltime data (even in the presence of noise).
 
--->

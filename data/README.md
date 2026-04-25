@@ -3,8 +3,10 @@
 ## Dome Fuji
 
 Fujita, Shuji, et al. "Densification of layered firn in the ice sheet at Dome Fuji, Antarctica." Journal of Glaciology 62.231 (2016): 103-123
+https://ads.nipr.ac.jp/data/meta/A20260113-001
 
 Hori, A., et al. "A detailed density profile of the Dome Fuji (Antarctica) shallow ice core by X-ray transmission method." Annals of Glaciology 29 (1999): 211-214
+https://ads.nipr.ac.jp/data/meta/A20260113-002
 
 ## Ekström
 

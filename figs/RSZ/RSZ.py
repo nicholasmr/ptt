@@ -21,24 +21,20 @@ Nl, Ns = 50, 30
 H = 250 # ice thickness (m)
 L = np.linspace(0,H,Ns) # half-offsets sampled (L=0 is nadir)
 
-### PP profiles
+### Model parameters
 
-cx0, cz0 = 1/3, 1/3
-cx1, cz1 = 0.0, 0.75
-cij = (cx0,cx1, cz0,cz1)
-
-zbc0 = 0.8 # normalized BCO height (level)
+m = (0.8, 1/3,0, 1/3, 0.75)
 
 ### Init
 
 MG = MaxwellGarnettColumn(H=H, L=L, Nl=Nl)
-MG.set_physprops(zbc0, *cij)
+MG.set_params(*m)
 
 ### Debug by enabling/disabling different parts of the PP profiles
 
-#MG.set_physprops(zbc0, *cij, e0=0) # disable bubble (structural) anisotropy
-#MG.set_physprops_solidice(*[1/3]*4) # disable fabric anisotropy
-#MG.set_physprops_solidice(*cij) # disable densification AND bubble anisotropy (solid, anisotropic ice)
+#MG.set_params(*m, e0=0) # disable bubble (structural) anisotropy
+#MG.set_params_solidice(*[1/3]*4) # disable fabric anisotropy
+#MG.set_params_solidice(*m[1:]) # disable densification AND bubble anisotropy (solid, anisotropic ice)
 
 """
 Setup figure
@@ -57,7 +53,7 @@ axes += [fig.add_subplot(gs0[0, 1+_], sharey=ax1) for _ in range(6)]
 FSLEG = 10
 
 """
-Plot PP profiles
+Plot parameter profiles
 """
 
 kw = dict(lw=1.25)
@@ -121,5 +117,5 @@ for ii, ax in enumerate(axes):
     at = AnchoredText(r'{(%s)}'%(chr(ord('a')+ii)), **kw)
     ax.add_artist(at)
     
-plt.savefig('RSZ.png', dpi=200, bbox_inches='tight', pad_inches=0.02)
+plt.savefig('RSZ.pdf', dpi=200, bbox_inches='tight', pad_inches=0.02)
 

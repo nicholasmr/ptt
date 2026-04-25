@@ -6,7 +6,7 @@ Dielectric model for a firn-ice column, using:
 
     - a Maxwell--Garnett dielectric mixing model
     - a single stage Herron--Langway density model
-    - a powerlaw profile of bubble eccentricities (bubbles are vertical cigar-like ellipsoids)
+    - a power law profile of bubble eccentricities (bubbles are standing ellipsoids, horizontally symmetric)
 """
 
 import code # code.interact(local=locals())
@@ -21,7 +21,13 @@ from matplotlib.offsetbox import AnchoredText
 from matplotlib import rcParams, rc
 rc('font',**{'family':'serif','serif':['Times']})
 rc('text', usetex=True) 
-rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb} \usepackage{physics} \usepackage{txfonts}'
+rcParams['text.latex.preamble'] = r'\usepackage{amsmath,amssymb,physics,siunitx} \usepackage{newtxtext,newtxmath}' # newtx is RSPA-like font
+
+# white axis faces, transparent background
+rcParams.update({
+    "axes.facecolor":    (1, 1, 1, 1),
+    "savefig.facecolor": (1, 1, 1, 0),
+})
 
 FSLEG = 11
 
@@ -44,7 +50,22 @@ Savg   = np.sqrt(mu*epsavg) # isotropic slowness
 # in air
 eps_air = 1
 
+"""
+Parameter vectors and bounds
+"""
+
+m_null   = (0.75, 1/3,1/3, 1/3,1/3) # uninformed guess (zbco, lx0,lx1, lz0,lz1)
+m_bounds = [(0.5, 0.95), (0,1),(0,1), (0,1),(0,1)] # upper and lower bounds on parameters
+
+#m_bounds = [(0.5, 0.95), (0,1/3),(0,1/3), (1/3,1),(1/3,1)] # debug
+
+"""
+Maxwell--Garnett model
+"""
+
 class MaxwellGarnettColumn():
+
+    m_null = m_null
     
     def __init__(self, H=500, L=np.linspace(0,500/2,10), Nl=50):
     
@@ -56,7 +77,7 @@ class MaxwellGarnettColumn():
         self.x = self.L/H # normalized CMP half-offsets (x=0 is nadir)
         self.X, self.Z = np.meshgrid(self.x, self.z) # gridded
                 
-        self.alpha = np.pi/2 - np.arctan2(1-self.Z,self.X) # straight CMP angle for a given x and z
+        self.alpha = np.pi/2 - np.arctan2(1-self.Z,self.X) # straight-ray CMP angle for a given x and z
         
         thres = np.deg2rad(89.99)
         self.alpha[self.alpha > thres] = thres
@@ -65,12 +86,12 @@ class MaxwellGarnettColumn():
         self.alphadeg = np.rad2deg(self.alpha)        
         
     """
-    Physical properties
+    Parameter profiles (density, eccentricity, fabric)
     """
 
-    def set_physprops(self, zbco, cx0,cx1, cz0,cz1, rhos=0.35, e0=0.8, p=0.5, rhoheva=0.99):
+    def set_params(self, zbco, lx0,lx1, lz0,lz1, rhos=0.35, e0=0.8, p=0.5, rhoheva=0.99):
         self.rhoh = self.rhoh_HL(zbco,rhos) # rho hat (relative rho)
-        self.lami = self.lami_seriesexp(cx0,cx1, cz0,cz1)
+        self.lami = self.lami_seriesexp(lx0,lx1, lz0,lz1)
         zeva = 0 if rhoheva is None else self.rhoh2z_HL(rhoheva, zbco,rhos) # z-coordinate for vanishing eccentricity (eva) given by where rhoh(z)=rhoheva
         self.e    = self.e_powerlaw(e0,p,zeva)
         self.Ni   = self.e2Ni(self.e)
@@ -78,7 +99,7 @@ class MaxwellGarnettColumn():
         self.set_eigenslownesses()
         self.zbco, self.rhos, self.e0, self.p = zbco, rhos, e0, p
         
-    def set_physprops_solidice(self, *args):
+    def set_params_solidice(self, *args):
         # set solid ice column
         self.rhoh = self.z*0 + 1 # solid ice
         if len(args) == 4 and (np.any(args is None) is not None): self.lami = self.lami_seriesexp(*args)
@@ -106,11 +127,11 @@ class MaxwellGarnettColumn():
         z = 1 - (np.log(1/rhoh-1)-beta)/alpha
         return z
 
-    def lami_seriesexp(self, cx0,cx1, cz0,cz1):
-        # Fabric eigenvalue profile (linearization of x- and z-components, whereas y-component is given by normalization)
+    def lami_seriesexp(self, lx0,lx1, lz0,lz1):
+        # Fabric eigenvalue profile (linearization of x- and z-component, whereas y-component is given by normalization)
         d = 1-self.z # depth
-        lamx = cx0+(cx1-cx0)*d
-        lamz = cz0+(cz1-cz0)*d
+        lamx = lx0+(lx1-lx0)*d
+        lamz = lz0+(lz1-lz0)*d
         lamy = 1-lamx-lamz
         lami = np.array([lamx,lamy,lamz])
         return lami
@@ -119,8 +140,8 @@ class MaxwellGarnettColumn():
         # Power law eccentricity profile
         if e0>1:  e0 = 1-1e-3
         if e0<e1: e0 = e1
-        ecc = e0 + (e1 - e0) * ((1-self.z)/(1-z1))**p
-        ecc[self.z<z1] = e1
+        ecc = e0 + (e1 - e0) * ((1-self.z)/(1-z1))**p # =e0 at surface z=1
+        ecc[self.z<z1] = e1 # below cutoff depth z1 is solid ice
         return ecc
         
     def e2Ni(self, ecc):
@@ -278,34 +299,55 @@ class MaxwellGarnettColumn():
     Inverse problem
     """
     
-    def infer_params(self, x_true, z_true, dTWTT_true, args_guess=(0.6, 1/3,1/3, 1/3,1/3), kw_pp=dict()):
+    def set_observed_dTWTT(self, x_true, z_true, dTWTT_true):
+        # Do this before running inversion
+        self.x_true     = x_true.flatten() 
+        self.z_true     = z_true.flatten()
+        self.dTWTT_true = dTWTT_true.flatten()
+        self.Npts_true = np.sum(~np.isnan(self.dTWTT_true)) # number of sampling points in acquisition space
+    
+    def J(self, dTWTT):
+        # Misfit measure (objective function)
+        J_misfit = 0
+        for kk in range(len(self.z_true)):
+            ii = np.argmin(np.abs(self.z_true[kk] - self.z)) # nearest z-pos in model grid
+            jj = np.argmin(np.abs(self.x_true[kk] - self.x)) # nearest x-pos in model grid
+            error = dTWTT[ii,jj]-self.dTWTT_true[kk]
+            if not np.isnan(error):
+                J_misfit += np.power(error, 2)
+        J = 1e9*np.sqrt(J_misfit)/self.Npts_true # regularization not found to be needed
+        return J
+    
+    def infer_params(self, *obs, kw_pp=dict(), \
+                            m_guess=m_null, \
+                            tol=1e-3 # stop at this relative decrease in J (found to suffice by trial and error)
+        ):
         
-        Npts = np.sum(~np.isnan(dTWTT_true)) # sampling points in space of CMP geometries
+        self.set_observed_dTWTT(*obs)
         
-        def cost(x):
-            self.set_physprops(*x, **kw_pp) # x = args = (zbco, cx0,cx1, cz0,cz1)
+        def cost(m):
+            self.set_params(*m, **kw_pp)
             dTWTT, *_ = self.dTWTT()
-            J_misfit = 0
-            for kk in range(len(z_true)):
-                ii = np.argmin(np.abs(z_true[kk] - self.z)) # nearest z-pos in model grid
-                jj = np.argmin(np.abs(x_true[kk] - self.x)) # nearest x-pos in model grid
-                error = dTWTT[ii,jj]-dTWTT_true[kk]
-                if not np.isnan(error):
-                    J_misfit += np.power(error, 2)
-            J = 1e9*np.sqrt(J_misfit)/Npts # (regularization not needed)
-            print('J=%.2e // %s'%(J, self.argsstr(*x)))
+            J = self.J(dTWTT)
+            print('J=%.2e // %s'%(J, self.mstr(*m)))
             return J
             
-        print('*** args_guess: %s'%(self.argsstr(*args_guess)))
-        
-        bounds = [(0.5, 0.95), (0,1/3),(0,1/3), (1/3,1),(1/3,1)] 
-        tol = 1e-3 # stop at this relative decrease in J (found to suffice by trial and error)
-        res = minimize(cost, args_guess, method='SLSQP', tol=tol, bounds=bounds)
-        args_infr = res.x
-        return args_infr
+        print('\n*** m_guess: %s'%(self.mstr(*m_guess)))
 
-    def argsstr(self, zbco, cx0,cx1, cz0,cz1):
-        return 'zbco=%.2f :: cx0=%.2f, cx1=%.2f :: cz0=%.2f, cz1=%.2f'%(zbco, cx0,cx1, cz0,cz1)
+        # Add constraints to help infer girdle fabrics and horizontal pole, assuming fabrics generally strengthen with depth
+        Ix0,Ix1, Iz0,Iz1 = 1,2, 3,4
+        m_constraints = [
+            {'type': 'ineq', 'fun': lambda m: (m[Iz1]>m[Ix1])*(m[Iz1]-m[Iz0]) }, # if lz1>lx1 (vertical pole) then constrain lz1>lz0 (vertical pole strengthens with depth) 
+#            {'type': 'ineq', 'fun': lambda m: (m[Iz1]>m[Ix1])*(m[Iz0]-m[Ix0]) }, # if lz1>lx1 (vertical pole) then constrain lz0>lx0 (eigenvalue profiles don't cross) 
+        ]
+        
+        res = minimize(cost, m_guess, method='SLSQP', tol=tol, bounds=m_bounds, constraints=m_constraints)
+        m_infr = res.x
+        
+        return m_infr
+
+    def mstr(self, zbco, lx0,lx1, lz0,lz1):
+        return 'zbco=%.2f :: lx0=%.2f, lx1=%.2f :: lz0=%.2f, lz1=%.2f'%(zbco, lx0,lx1, lz0,lz1)
 
     """
     Plotting
@@ -437,26 +479,7 @@ class MaxwellGarnettColumn():
                 nlm = sf.a2_to_nlm(np.diag(self.lami[:,I]))
                 axin = plotODF(ax, nlm, axpos0=(axposx, z))
 
-
-def subsample_row(X_obs,Z_obs,dTWTT_obs, xi,zi):
-
-    ### Subsample the space of CMP geometries
-
-    X_ss, Z_ss, dTWTT_ss = [], [], []
-    x, z = X_obs[0,:], Z_obs[:,0] # 1d vectors from which X and Z were built
-    Ic = np.array([np.argmin(np.abs(x-_)) for _ in xi])
-
-    for _ in zi:
-        ii = np.argmin(np.abs(z-_))
-        F = dTWTT_obs[ii,:][Ic].squeeze()
-        I = np.where(~np.isnan(F))[0]
-        dTWTT_ss.append(F[I])
-        X_ss.append(X_obs[ii,:][Ic].squeeze()[I])
-        Z_ss.append(Z_obs[ii,:][Ic].squeeze()[I])
-        
-    return (np.concatenate(X_ss), np.concatenate(Z_ss), np.concatenate(dTWTT_ss))   
-    
-    
+   
 if __name__ == '__main__':
 
     print('*** Dielectric constants used ***')

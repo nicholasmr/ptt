@@ -36,7 +36,8 @@ eccp = [0.5, 0.9]
 
 def get_MG(ii):
     MG = MaxwellGarnettColumn(Nl=100)
-    MG.set_physprops(0, 1/3,0.25, 1/3,0.5, e0=ecc0[ii], p=eccp[ii], rhoheva=None)
+    m = (0, 1/3,0.25, 1/3,0.5)
+    MG.set_params(*m, e0=ecc0[ii], p=eccp[ii], rhoheva=None)
     MG.rhoh, MG.rhoh_err = f_rhoh(MG.z)
     MG.rhoh_obs = MG.rhoh.copy()
     MG.set_permittivities()
@@ -79,7 +80,7 @@ FSLEG = 9.5
 kwleg = dict(frameon=False, fontsize=FSLEG, labelspacing=0.2, handlelength=1, handletextpad=0.3)
 
 """
-PP profiles
+Parameter profiles
 """
 
 labels = [files[ii][:-4] for ii in range(2)]
@@ -145,7 +146,7 @@ for ii, f in enumerate(files):
     ax.plot(delta, z, zorder=10, label='Model', lw=lw+0.35, color=ci[ii])
 
     if 1:
-        MG[ii].set_physprops_solidice() # if firn was solid ice...
+        MG[ii].set_params_solidice() # if firn was solid ice...
         delta = MG[ii].eps_firn[2] - MG[ii].eps_firn[0]
         ax.plot(delta, z, zorder=10, label='Solid ice', lw=lw+0.25, color=ci[ii], ls=':')
 
@@ -195,5 +196,5 @@ for ii, ax in enumerate((ax1,ax2,ax3,ax4,ax5,ax6)):
     kw = dict(loc=2, frameon=False, prop=dict(size=11), bbox_to_anchor=(-0.15 -(ii>=2)*0.1, 1.22), bbox_transform=ax.transAxes)
     ax.add_artist(AnchoredText(r'{(%s)}'%(chr(ord('a')+ii)), **kw))
     
-plt.savefig('DF.png', dpi=200, bbox_inches='tight', pad_inches=0.02)
+plt.savefig('DF.pdf', dpi=200, bbox_inches='tight', pad_inches=0.02)
 

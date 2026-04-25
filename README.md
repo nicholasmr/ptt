@@ -1,6 +1,6 @@
 # Polarimetric traveltime tomography model
 
-Model code and scripts for reproducing the plots of Rathmann (2026, *in review*).
+Model code and scripts for reproducing the plots of Rathmann (2026, RSPA).
 
 <img src="https://raw.githubusercontent.com/nicholasmr/ptt/refs/heads/main/overview.png?token=GHSAT0AAAAAACPHSIBFBR6TXMYKBROKQ6PS2KX5PMQ" alt="overview" width="650px"> 
 
@@ -11,5 +11,5 @@ Model code and scripts for reproducing the plots of Rathmann (2026, *in review*)
 ## What can it do? 🧊
 - Model the dieletric behavioir of ice and firn. 
 - Model travel times along oblique ray paths. 
-- Solve an inverse problem to robustly recover the fabric eigenvalue profile and bubble close-off depth from a limited set of CMP offsets, even in the presence of noise.
+- Solve an inverse problem to robustly recover the fabric eigenvalue profile and bubble close-off depth from CMP traveltime data (even in the presence of noise).
 

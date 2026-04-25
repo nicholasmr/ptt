@@ -21,16 +21,14 @@ Nl, Ns = (50,30)
 H = 250 # ice thickness (m)
 L = np.linspace(0,H,Ns) # half-offsets sampled (L=0 is nadir)
 
-### PP profiles
+### Model parameters
 
-cx0, cz0 = 1/3, 1/3
-cx1, cz1 = 0.0, 0.75
-cij = (cx0,cx1, cz0,cz1)
+m = (None, 1/3,0, 1/3,0.75)
 
 ### Init
 
 MG = MaxwellGarnettColumn(H=H, L=L, Nl=Nl)
-MG.set_physprops_solidice(*cij) # disable densification and bubble anisotropy (=> solid anisotropic ice)
+MG.set_params_solidice(*m[1:]) # disable densification and bubble anisotropy (=> solid anisotropic ice)
 
 """
 Setup figure
@@ -47,7 +45,7 @@ axes = (ax1,ax3)
 FSLEG = 10.5
 
 """
-Plot PP profiles
+Plot parameter profiles
 """
 
 kw = dict(lw=1.15)

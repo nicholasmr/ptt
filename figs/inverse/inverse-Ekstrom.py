@@ -71,11 +71,11 @@ lwi = [1.7,1.15]
 elbl = ['', '']
 
 def plot_inverse_experiment(X_ssobs, Z_ssobs, dTWTT_ssobs, ppi=0):
-#    args_guess=(0.8, 1/3,1/3, 1/3,1/3) # uninformed
-    args_guess=(0.9, 1/3,0, 1/3,1) # used in paper
-    args_infr = MG.infer_params(X_ssobs, Z_ssobs, dTWTT_ssobs, args_guess=args_guess, kw_pp=kwi_pp[ppi])
+#    m_guess=(0.8, 1/3,1/3, 1/3,1/3) # uninformed
+    m_guess=(0.9, 1/3,0, 1/3,1) # used in paper
+    m_infr = MG.infer_params(X_ssobs, Z_ssobs, dTWTT_ssobs, m_guess=m_guess, kw_pp=kwi_pp[ppi])
     plot_profiles(ppi=ppi)
-    return args_infr
+    return m_infr
 
 resmul = 1 
 #resmul = 0.1 # reduced resolution for debugging 
@@ -84,12 +84,12 @@ L = np.linspace(0,H,int(25*resmul)) # half-offsets sampled (L=0 is nadir)
 MG = MaxwellGarnettColumn(H=H, L=L, Nl=int(30*resmul))
 inp = (X_obs.flatten(), Z_obs.flatten(), dTWTT_obs.flatten())
 
-args_infr1 = plot_inverse_experiment(*inp, ppi=0)
-MG.set_physprops(*args_infr1)
+m_infr1 = plot_inverse_experiment(*inp, ppi=0)
+MG.set_params(*m_infr1)
 h = MG.plot_dTWTT_expr(fig, ax5, MG.X, MG.Z, MG.dTWTT()[0], label=r'Inferred 1', clbl=ci[0])
 
-args_infr2 = plot_inverse_experiment(*inp, ppi=1)
-MG.set_physprops(*args_infr2)
+m_infr2 = plot_inverse_experiment(*inp, ppi=1)
+MG.set_params(*m_infr2)
 h = MG.plot_dTWTT_expr(fig, ax6, MG.X, MG.Z,  MG.dTWTT()[0], label=r'Inferred 2', clbl=ci[1], caxpos=[0.795, 0.73, 0.09, 0.05])
 
 hleg = ax3.legend([r'$\lambda_{z}$',r'$\lambda_{x}$',r'$\lambda_{y}$'], loc=1, frameon=False, handlelength=1.1, handletextpad=0.3, labelspacing=0.05, bbox_to_anchor=(1.13,1.08), fontsize=FSLEG)
@@ -104,7 +104,7 @@ Plot dTWTT
 """
 
 h = MG.plot_dTWTT_expr(fig, ax4, X_obs, Z_obs, dTWTT_obs, label='Observed')
-ax4.text(0.90, 0.90, "N/A", c='k', fontsize=FSLEG-1, ha='right', va='top')
+ax4.text(0.48, 0.5, "Ekström data \n(Oraschewski\n et al., 2025)", rotation=90, c='k', fontsize=FSLEG-1.5, ha='left', va='center')
 
 """
 Warp up and save plot
@@ -118,5 +118,5 @@ for ii, ax in enumerate(axes):
     at = AnchoredText(r'{(%s)}'%(chr(ord('a')+ii)), **kw)
     ax.add_artist(at)
 
-plt.savefig('inverse-Ekstrom.png', dpi=200, bbox_inches='tight', pad_inches=0.04)
+plt.savefig('inverse-Ekstrom.pdf', dpi=250, bbox_inches='tight', pad_inches=0.04)
 

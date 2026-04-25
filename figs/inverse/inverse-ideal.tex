@@ -1,0 +1,33 @@
+% Nicholas M. Rathmann <rathmann@nbi.ku.dk>
+
+\documentclass[border=0pt,tikz]{standalone}
+
+\usepackage{newtxtext,newtxmath} % RSPA-like font
+\usetikzlibrary{fadings}
+
+\tikzset{
+	every picture/.style={line width=0.75pt},
+	labeltitle/.style={ font=\fontsize{10.5}{0}\selectfont},
+}
+
+\tikzfading[name=east fade, left color=transparent!0, right color=transparent!100]
+
+\gdef\dypad{2.0em}
+\gdef\Lx{41.75em} 
+\gdef\ybox{15em} 
+
+\newcommand{\groupBoxTall}[4]{
+	\begin{scope}[shift={(0,#1)}]
+		\node[anchor=south] (FIG) at (\Lx/2,0.15em) {\includegraphics[scale=1]{#3}};
+		\node[labeltitle, anchor=south west] at (0,#2+0.0em) {{#4}}; 
+		\shade[black, path fading=east fade, fit fading=true] (0cm,#2-0.0em) rectangle ++({\Lx*4/4},{1.2pt});
+	\end{scope}
+}
+
+\begin{document}
+\begin{tikzpicture}[]
+	\groupBoxTall{-1*(\ybox+\dypad)}{\ybox}{inverse-ideal-E0.pdf}{Experiment 1: Vertical single maximum}
+	\groupBoxTall{-2*(\ybox+\dypad)}{\ybox}{inverse-ideal-E1.pdf}{Experiment 2: Vertical girdle}
+	\groupBoxTall{-3*(\ybox+\dypad)}{\ybox}{inverse-ideal-E2.pdf}{Experiment 3: Mixed}
+\end{tikzpicture}
+\end{document}
